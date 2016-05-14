@@ -20,5 +20,5 @@ npm-debug.log
 dist
 
 #ignore built files in src
-src/**/*.js
-src/**/*.css
+#src/**/*.js
+#src/**/*.css
