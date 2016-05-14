@@ -1,4 +1,5 @@
 var chai = require('chai');
+var should = chai.should();
 var debug = require('debug')('segment-sim:test:lib');
 var lib = require('../src/server/lib');
 var data = require('./data');
@@ -13,19 +14,19 @@ describe('lib', function() {
         });
 
         ['identify', 'track', 'page', 'alias', 'group'].forEach(function(method) {
-          it(`should run ${method} successfully`, function(done) {
+          it.skip(`should run ${method} successfully`, function(done) {
             var instance = new lib[libName]();
             instance[method](data[method], function(err, response) {
               debug(err);
               debug(response);
 
-              chai.should().not.exist(err);
+              should.not.exist(err);
               response.should.be.ok;
               done();
             });
           });
 
-          it.skip(`${method} should error on bad json`, function(done) {
+          it(`${method} should error on bad json`, function(done) {
             var instance = new lib[libName]();
             instance[method]('this is not json', function(err, response){
               debug(err);

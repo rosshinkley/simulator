@@ -30,22 +30,29 @@ client.on('connect', function() {
 
 client.on('data', function(data) {
   //parse the data request
-  var request = JSON.parse(data);
-  debug(request);
+  try {
+    var request = JSON.parse(data);
+    debug(request);
 
-  if (request.type == 'connect') {
-    //handshake complete, issue the data => segment
-    debug(`about to issue ${request.method}`);
-    debug(request.data);
-    //call the request's method in analytics with the data payload
-    analytics[request.method](request.data, function(err, response) {
-      debug('response received');
-      //send the error and response back to the calling process
-      client.write(JSON.stringify({
-        type: 'response',
-        err: err,
-        response: response
-      }));
-    });
+    if (request.type == 'connect') {
+      //handshake complete, issue the data => segment
+      debug(`about to issue ${request.method}`);
+      debug(request.data);
+      //call the request's method in analytics with the data payload
+      analytics[request.method](request.data, function(err, response) {
+        debug('response received');
+        //send the error and response back to the calling process
+        client.write(JSON.stringify({
+          type: 'response',
+          err: err,
+          response: response
+        }));
+      });
+    }
+  } catch (e) {
+    client.write(JSON.stringify({
+      type:'response',
+      err:e
+    }));
   }
 });
