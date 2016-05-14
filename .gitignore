@@ -1,0 +1,24 @@
+#ignore installed modules
+node_modules
+jspm_packages
+typings
+
+#ignore the copied-down config file
+src/client/config.js
+src/client/tsconfig.js
+
+#ignore npm debug
+npm-debug.log
+
+#ignore gedit backups
+.md~
+.js~
+.html~
+.css~
+
+#ignore dist
+dist
+
+#ignore built files in src
+src/**/*.js
+src/**/*.css

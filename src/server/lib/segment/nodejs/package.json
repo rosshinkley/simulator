@@ -1,0 +1,10 @@
+{
+  "name": "segment-nodejs-dummy",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "dependencies": {
+    "analytics-node": "git://github.com/segmentio/analytics-node",
+    "debug": "^2.2.0"
+  }
+}
