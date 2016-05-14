@@ -22,3 +22,6 @@ dist
 #ignore built files in src
 #src/**/*.js
 #src/**/*.css
+
+#ignore my sandbox
+sandbox.js

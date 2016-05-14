@@ -19,13 +19,13 @@ describe('lib', function() {
               debug(err);
               debug(response);
 
-              chai.should.not.exist(err);
+              chai.should().not.exist(err);
               response.should.be.ok;
               done();
             });
           });
 
-          it(`${method} should error on bad json`, function(done) {
+          it.skip(`${method} should error on bad json`, function(done) {
             var instance = new lib[libName]();
             instance[method]('this is not json', function(err, response){
               debug(err);
@@ -35,9 +35,10 @@ describe('lib', function() {
               done();
             });
           });
+        
+          it.skip(`${method} should not accept bad component data`);
         });
 
-        it.skip(`${method} should not accept bad component data`);
       });
     });
 });
