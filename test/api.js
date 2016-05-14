@@ -10,7 +10,7 @@ var got = require('got');
 var lib = require('../src/server/lib');
 
 describe('api', function() {
-  var base='http://localhost:3456/api'
+  var base = 'http://localhost:3456/api'
   before(function(done) {
     app.listen(3456, done);
   });
@@ -23,30 +23,44 @@ describe('api', function() {
     .forEach(function(libName) {
       describe(`api for ${libName}`, function() {
         ['identify', 'track', 'page', 'alias', 'group'].forEach(function(method) {
-          it.skip(`should run ${method} successfully`, function * () {
+          it(`should run ${method} successfully`, function * () {
             var result = (yield got([base, libName, method].join('/'), makeRequest('POST', data[method])))
               .body;
             result.should.be.ok;
-            result.result.should.be.okay;
             should.not.exist(result.err);
           });
 
-          it(`${method} should error on bad json`, function (done) {
+          it(`${method} should error on bad json`, function(done) {
             got([base, libName, method].join('/'), makeRequest('POST', 'this is bad json'))
-            .catch(error => {
-              error.statusCode.should.equal(400);
-              done()
-            })
+              .catch(error => {
+                error.statusCode.should.equal(400);
+                done()
+              })
           });
 
-          it.skip(`${method} should not accept bad component data`);
+          it(`${method} should not accept bad component data`, function(done) {
+            got([base, libName, method].join('/'), makeRequest('POST', {}))
+              .then(response => {
+                done(new Error('got response!'));
+              })
+              .catch(error => {
+                error.statusCode.should.equal(500);
+                done();
+              });
+          });
         });
 
       });
 
-      it.skip(`${libName} should not allow bad method names`, function * () {
-        var result = (yield got([base, libName, 'junk'].join('/'), makeRequest('POST', data.identify)));
-        result.status.should.equal(400);
+      it(`${libName} should not allow bad method names`, function(done) {
+        got([base, libName, 'junk'].join('/'), makeRequest('POST', data.identify))
+          .then(response => {
+            done(new Error('got response!'));
+          })
+          .catch(error => {
+            error.statusCode.should.equal(400);
+            done();
+          });
       });
     });
 });

@@ -1,4 +1,5 @@
 var express = require('express');
+var debug = require('debug')('segment-sim:api');
 var lib = require('./lib');
 
 var makeApiRouter = function(io) {
@@ -6,6 +7,7 @@ var makeApiRouter = function(io) {
   var apiRouter = express.Router();
 
   apiRouter.post('/:language/:method', function(req, res) {
+    debug(`rq for ${req.params.language}/${req.params.method}`);
     //if the language is a part of the library,
     if (lib[req.params.language]) {
       //make an instance of that language's wrapper
@@ -36,8 +38,9 @@ var makeApiRouter = function(io) {
         });
       } else {
         //respond with a bad request
+        debug(`instance did not have ${req.params.method}, rejecting request`);
         res.status(400)
-          .send({
+          .json({
             error: `Method ${req.params.method} does not exist for language ${req.params.language}`
           });
       }
