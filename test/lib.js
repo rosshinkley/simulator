@@ -14,7 +14,7 @@ describe('lib', function() {
         });
 
         ['identify', 'track', 'page', 'alias', 'group'].forEach(function(method) {
-          it.skip(`should run ${method} successfully`, function(done) {
+          it(`should run ${method} successfully`, function(done) {
             var instance = new lib[libName]();
             instance[method](data[method], function(err, response) {
               debug(err);
@@ -28,7 +28,7 @@ describe('lib', function() {
 
           it(`${method} should error on bad json`, function(done) {
             var instance = new lib[libName]();
-            instance[method]('this is not json', function(err, response){
+            instance[method]('this is not json', function(err, response) {
               debug(err);
               debug(response);
 
@@ -36,8 +36,17 @@ describe('lib', function() {
               done();
             });
           });
-        
-          it.skip(`${method} should not accept bad component data`);
+
+          it(`${method} should not accept bad component data`, function(done) {
+            var instance = new lib[libName]();
+            instance[method]({}, function(err, response) {
+              debug(err);
+              debug(response);
+
+              err.should.be.ok;
+              done();
+            });
+          });
         });
 
       });
