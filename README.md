@@ -1,6 +1,6 @@
 # segment request simulator
 
-Send requests to the Segment backend with the Segment libraries.
+Send requests to the Segment backend with the Segment libraries. A [demo](http://segment-simulator.rosshinkley.com/) is available.
 
 ## installation
 `npm install` should be enough to get started.  Running the service can be done with `npm start`.
