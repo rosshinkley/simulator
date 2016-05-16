@@ -1,0 +1,31 @@
+{
+  "name": "segment-task",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "body-parser": "^1.15.1",
+    "express": "^4.13.4",
+    "socket.io": "^1.4.6",
+    "split2": "^2.0.1",
+    "uuid": "^2.0.2"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "got": "^6.3.0",
+    "mocha-generators": "^1.2.0",
+    "mocha": "^2.4.5"
+  },
+  "scripts": {
+    "test": "mocha test/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "''"
+  },
+  "author": "",
+  "license": "ISC"
+}
