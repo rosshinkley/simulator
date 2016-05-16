@@ -557,6 +557,7 @@ var RawRequest = function(panel) {
     }
     if (!parsed.type) {
       self.response('Request does not have a request type.');
+      return;
     }
 
     var type = parsed.type;
@@ -565,15 +566,17 @@ var RawRequest = function(panel) {
     console.log(parsed);
 
     $.ajax({
-      url: '/api/' + panel.language() + '/raw',
+      url: '/api/' + panel.language() + '/' + type,
       type: 'POST',
-      data: parsed
+      contentType: 'application/json',
+      data: JSON.stringify(parsed),
+      dataType: 'json'
     })
       .done(function(response) {
-        self.response(response);
+        self.response(JSON.stringify(response, null, 3));
       })
       .fail(function(err) {
-        self.response(err);
+        self.response(JSON.stringify(err,null, 3));
       });
 
   };
@@ -600,6 +603,7 @@ var PanelModel = function() {
   self.raw = ko.observable(new RawRequest(self));
 
   self.submit = function() {
+    self.response('wait...');
     var data = self[self.method()]()
       .jsify();
 
