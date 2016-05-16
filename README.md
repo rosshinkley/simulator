@@ -18,6 +18,14 @@ The API exposes a single `POST` method that allows a client to send a language, 
 ### UI
 The [Knockout](http://knockoutjs.com/)-based UI exposes forms for each method type as well as a raw option.  The UI also allows for language selection.
 
+## time
+
+* **library wrapper:** It only took about an hour to sandbox the library wrapper together and another hour for integration tests.
+* **api:** 2 hours plus another hour for integration tests.
+* **ui:** My weakest link.  Pulling this together took ~8 hours including testing.
+* **deployment:** 1 hour.
+* **docs:** 1 hour.
+
 ## future improvements
 
 There are a _lot_ of things this project could do.  Highlight reel:
