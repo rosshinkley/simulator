@@ -8,6 +8,8 @@ var makeApiRouter = function(io) {
 
   apiRouter.post('/:language/:method', function(req, res) {
     debug(`rq for ${req.params.language}/${req.params.method}`);
+    debug('body', req.body);
+
     //if the language is a part of the library,
     if (lib[req.params.language]) {
       //make an instance of that language's wrapper

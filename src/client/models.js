@@ -69,8 +69,9 @@ var Integrations = function() {
   };
 
   self.jsify = function() {
-    if(self.integrationItems().length == 0){
-      return null;
+    if (self.integrationItems()
+      .length == 0) {
+      return undefined;
     }
     var temp = self.integrationItems()
       .reduce(function(accumulator, integration) {
@@ -115,7 +116,7 @@ var Properties = function() {
       }, true);
     if (self.children()
       .length == 0 && empty) {
-      return null;
+      return undefined;
     } else {
       if (self.children()
         .length > 0) {
@@ -174,7 +175,7 @@ var Traits = function() {
       }, true);
     if (self.children()
       .length == 0 && empty) {
-      return null;
+      return undefined;
     } else {
       if (self.children()
         .length > 0) {
@@ -199,7 +200,7 @@ var jsifyHelper = function(temp) {
       return accumulator && (!temp[key] || temp[key] == '');
     }, true);
   if (empty) {
-    return null;
+    return undefined;
   }
   return temp;
 };
@@ -376,7 +377,7 @@ var Context = function() {
         return accumulator && (!temp[key] || temp[key] == '');
       }, true);
     if (empty) {
-      return null;
+      return undefined;
     }
     return temp;
   };
@@ -416,7 +417,7 @@ var IdentifyRequest = function() {
   var self = new Request();
 
   self.traits = ko.observable(new Traits());
-  
+
   self.jsify = function() {
     var temp = ko.toJS(self);
     delete temp.traits;
@@ -440,7 +441,7 @@ var IdentifyRequest = function() {
 var TrackRequest = function() {
   console.log('making tracking request');
   var self = new Request();
-  
+
   self.properties = ko.observable(new Properties());
   self.event = ko.observable();
 
@@ -467,7 +468,7 @@ var TrackRequest = function() {
 var PageRequest = function() {
   console.log('making page request');
   var self = new Request();
-  
+
   self.properties = ko.observable(new Properties());
   self.category = ko.observable();
   self.name = ko.observable();
@@ -499,7 +500,7 @@ var GroupRequest = function() {
   self.traits = ko.observable(new Traits());
 
   self.groupId = ko.observable();
-  
+
   self.jsify = function() {
     var temp = ko.toJS(self);
     delete temp.traits;
@@ -520,7 +521,7 @@ var GroupRequest = function() {
   return self;
 };
 
-var AliasRequest = function(){
+var AliasRequest = function() {
   console.log('making alias request');
   var self = new Request();
   self.previousId = ko.observable();
@@ -542,19 +543,19 @@ var AliasRequest = function(){
   return self;
 };
 
-var RawRequest = function(panel){
-  var self=this;
+var RawRequest = function(panel) {
+  var self = this;
   self.request = ko.observable();
   self.response = ko.observable('ready.');
   var parsed;
-  self.submit = function(){
-    try{
+  self.submit = function() {
+    try {
       parsed = JSON.parse(self.request());
-    }catch(e){
+    } catch (e) {
       self.response('Please ensure your request is valid JSON.');
       return;
     }
-    if(!parsed.type){
+    if (!parsed.type) {
       self.response('Request does not have a request type.');
     }
 
@@ -562,6 +563,18 @@ var RawRequest = function(panel){
     delete parsed.type;
 
     console.log(parsed);
+
+    $.ajax({
+      url: '/api/' + panel.language() + '/raw',
+      type: 'POST',
+      data: parsed
+    })
+      .done(function(response) {
+        self.response(response);
+      })
+      .fail(function(err) {
+        self.response(err);
+      });
 
   };
 
@@ -575,7 +588,7 @@ var PanelModel = function() {
   var self = this;
 
   self.language = ko.observable('nodejs');
-  self.method = ko.observable('raw');
+  self.method = ko.observable('identify');
 
   self.response = ko.observable('ready.');
 
@@ -587,8 +600,22 @@ var PanelModel = function() {
   self.raw = ko.observable(new RawRequest(self));
 
   self.submit = function() {
-    console.log(self[self.method()]()
-      .jsify());
+    var data = self[self.method()]()
+      .jsify();
+
+    $.ajax({
+      url: '/api/' + self.language() + '/' + self.method(),
+      type: 'POST',
+      contentType: 'application/json',
+      data: JSON.stringify(data),
+      dataType: 'json'
+    })
+      .done(function(response) {
+        self.response(JSON.stringify(response, null, 3));
+      })
+      .fail(function(err) {
+        self.response(JSON.stringify(err));
+      });
   };
 
   return self;
