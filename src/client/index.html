@@ -1,0 +1,1341 @@
+<html>
+<head>
+  <title>segment simulator</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://code.jquery.com/jquery-2.2.3.js" integrity="sha256-laXWtGydpwqJ8JA+X9x2miwmaiKhn8tVmOVEigRNtP4=" crossorigin="anonymous"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/knockout/3.4.0/knockout-debug.js'></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/knockout-validation/2.0.3/knockout.validation.js"></script>
+  <script src='/models.js'></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+
+  <!-- {{{ generic template -->
+  <script id="generic-properties-template" type='text/html'>
+    <div data-bind='foreach: $data'>
+      <div class='row'>
+        <div class='col-md-2'>
+          <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+        </div>
+        <div class='col-md-10'>
+          <div data-bind='visible: $data.children().length > 0'>
+            <div data-bind='template: {name: "generic-properties-template", data: $data.children}'></div>
+          </div>
+          <div data-bind='visible: $data.children().length == 0'>
+            <input data-bind='value:$data.value, valueUpdate:"keyup"' type='text' class='form-control' placeholder='value'  />
+          </div>
+          <a data-bind='click: $data.addChild'>add property to <span data-bind='text: $data.name'></span></a>&nbsp;|&nbsp;<a data-bind='click: $data.remove'>remove <span data-bind='text: $data.name'></span></a>
+        </div>
+      </div>  
+    </div>
+    
+    
+  </script>
+  <!-- }}} -->
+
+  <!-- {{{ common template -->
+  <script id="common-template" type='text/html'>
+      <div class='panel panel-default'>
+        <div class='panel-heading'>
+          <h3 class='panel-title'>Common Fields</h3>
+        </div>
+        <div class='panel-body'>
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  anonymousId:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.anonymousId, valueUpdate:"keyup"' type='text' class='form-control' placeholder='anonymousId'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  userId:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.userId, valueUpdate:"keyup"' type='text' class='form-control' placeholder='userId'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  channel:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.channel, valueUpdate:"keyup"' type='text' class='form-control' placeholder='channel'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  messageId:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.messageId, valueUpdate:"keyup"' type='text' class='form-control' placeholder='messageId'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  receivedAt:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.receivedAt, valueUpdate:"keyup"' type='text' class='form-control' placeholder='receivedAt'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  sentAt:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.sentAt, valueUpdate:"keyup"' type='text' class='form-control' placeholder='sentAt'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  version:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.version, valueUpdate:"keyup"' type='text' class='form-control' placeholder='version'  />
+              </div>
+            </div>
+          </div>
+          
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  timestamp:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.timestamp, valueUpdate:"keyup"' type='text' class='form-control' placeholder='timestamp'  />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </script>
+  <!-- }}} -->
+
+  <!-- {{{ context template -->
+  <script id="context-template" type='text/html'>
+      <div class='panel panel-default'>
+        <div class='panel-heading'>
+          <h3 class='panel-title'>Context Fields</h3>
+        </div>
+        <div class='panel-body'>
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  active:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.active, valueUpdate:"keyup"' type='text' class='form-control' placeholder='active'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  ip:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.ip, valueUpdate:"keyup"' type='text' class='form-control' placeholder='ip'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  locale:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.locale, valueUpdate:"keyup"' type='text' class='form-control' placeholder='locale'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  timezone:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.timezone, valueUpdate:"keyup"' type='text' class='form-control' placeholder='timezone'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  userAgent:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.userAgent, valueUpdate:"keyup"' type='text' class='form-control' placeholder='userAgent'  />
+              </div>
+            </div>
+          </div>       
+
+          <strong>app</strong>
+          <div data-bind='with:$data.app'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    name:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    version:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.version, valueUpdate:"keyup"' type='text' class='form-control' placeholder='version'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    build:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.build, valueUpdate:"keyup"' type='text' class='form-control' placeholder='build'  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <strong>campaign</strong>
+          <div data-bind='with: $data.campaign'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    name:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    source:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.source, valueUpdate:"keyup"' type='text' class='form-control' placeholder='source'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    medium:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.medium, valueUpdate:"keyup"' type='text' class='form-control' placeholder='medium'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    term:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.term, valueUpdate:"keyup"' type='text' class='form-control' placeholder='term'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    content:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.content, valueUpdate:"keyup"' type='text' class='form-control' placeholder='content'  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <strong>device</strong>
+          <div data-bind='with: $data.device'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    id:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.id, valueUpdate:"keyup"' type='text' class='form-control' placeholder='id'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    manufacturer:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.manufacturer, valueUpdate:"keyup"' type='text' class='form-control' placeholder='manufacturer'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    model:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.model, valueUpdate:"keyup"' type='text' class='form-control' placeholder='model'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    name:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    type:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.type, valueUpdate:"keyup"' type='text' class='form-control' placeholder='type'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    version:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.version, valueUpdate:"keyup"' type='text' class='form-control' placeholder='version'  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <strong>location</strong>
+          <div data-bind='with:$data.location'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    city:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.city, valueUpdate:"keyup"' type='text' class='form-control' placeholder='city'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    country:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.country, valueUpdate:"keyup"' type='text' class='form-control' placeholder='country'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    latitude:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.latitude, valueUpdate:"keyup"' type='text' class='form-control' placeholder='latitude'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    longitude:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.longitude, valueUpdate:"keyup"' type='text' class='form-control' placeholder='longitude'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    region:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.region, valueUpdate:"keyup"' type='text' class='form-control' placeholder='region'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    speed:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.speed, valueUpdate:"keyup"' type='text' class='form-control' placeholder='speed'  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <strong>library</strong>
+          <div data-bind='with: $data.library'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    name:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    version:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.version, valueUpdate:"keyup"' type='text' class='form-control' placeholder='version'  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <strong>network</strong>
+          <div data-bind='with: $data.network'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    bluetooth:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.bluetooth, valueUpdate:"keyup"' type='text' class='form-control' placeholder='bluetooth'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    carrier:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.carrier, valueUpdate:"keyup"' type='text' class='form-control' placeholder='carrier'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    cellular:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.cellular, valueUpdate:"keyup"' type='text' class='form-control' placeholder='cellular'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    wifi:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.wifi, valueUpdate:"keyup"' type='text' class='form-control' placeholder='wifi'  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <strong>operating system</strong>
+          <div data-bind='with: $data.os'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    name:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    version:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.version, valueUpdate:"keyup"' type='text' class='form-control' placeholder='version'  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          
+          <strong>page</strong>
+          <div data-bind='with: $data.page'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    hash:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.hash, valueUpdate:"keyup"' type='text' class='form-control' placeholder='hash'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    path:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.path, valueUpdate:"keyup"' type='text' class='form-control' placeholder='path'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    referrer:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.referrer, valueUpdate:"keyup"' type='text' class='form-control' placeholder='referrer'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    search:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.search, valueUpdate:"keyup"' type='text' class='form-control' placeholder='search'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    title:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.title, valueUpdate:"keyup"' type='text' class='form-control' placeholder='title'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    url:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.url, valueUpdate:"keyup"' type='text' class='form-control' placeholder='url'  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <strong>referrer</strong>
+          <div data-bind='with: $data.referrer'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    type:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.type, valueUpdate:"keyup"' type='text' class='form-control' placeholder='type'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    name:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    url:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.url, valueUpdate:"keyup"' type='text' class='form-control' placeholder='url'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    link:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.link, valueUpdate:"keyup"' type='text' class='form-control' placeholder='link'  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <strong>screen</strong>
+          <div data-bind='with: $data.screen'>
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    density:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.density, valueUpdate:"keyup"' type='text' class='form-control' placeholder='density'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    height:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.height, valueUpdate:"keyup"' type='text' class='form-control' placeholder='height'  />
+                </div>
+              </div>
+            </div>
+
+            <div class='form form-group'>
+              <div class='row'>
+                <div class='col-md-2'>
+                  <div class='pull-right'>
+                    width:
+                  </div>
+                </div>
+                <div class='col-md-6'>
+                  <input data-bind='value:$data.width, valueUpdate:"keyup"' type='text' class='form-control' placeholder='width'  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </script>
+
+  <!-- }}} -->
+
+   <!-- {{{ properties template -->
+  <script id="properties-template" type='text/html'>
+      <div class='panel panel-default'>
+        <div class='panel-heading'>
+          <h3 class='panel-title'>Property Fields</h3>
+        </div>
+        <div class='panel-body'>
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  name:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  path:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.path, valueUpdate:"keyup"' type='text' class='form-control' placeholder='path'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  referrer:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.referrer, valueUpdate:"keyup"' type='text' class='form-control' placeholder='referrer'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  search:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.search, valueUpdate:"keyup"' type='text' class='form-control' placeholder='search'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  title:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.title, valueUpdate:"keyup"' type='text' class='form-control' placeholder='title'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  url:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.url, valueUpdate:"keyup"' type='text' class='form-control' placeholder='url'  />
+              </div>
+            </div>
+          </div>
+
+          <strong>custom properties</strong>
+          <span data-bind='visible: $data.children().length > 0' style='color:orange'>properties with blank names will be omitted</span>
+          <div data-bind='template: {name: "generic-properties-template", data: $data.children }'></div>
+          <div>
+            <a data-bind='click: $data.addChild'>add property</a>
+          </div>
+
+        </div>
+      </div>
+  </script>
+  <!-- }}} -->
+
+<!-- {{{ traits template -->
+<script id="traits-template" type='text/html'>
+      <div class='panel panel-default'>
+        <div class='panel-heading'>
+          <h3 class='panel-title'>Traits Fields</h3>
+        </div>
+        <div class='panel-body'>
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  age:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.age, valueUpdate:"keyup"' type='text' class='form-control' placeholder='age'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  avatar:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.avatar, valueUpdate:"keyup"' type='text' class='form-control' placeholder='avatar'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  birthday:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.birthday, valueUpdate:"keyup"' type='text' class='form-control' placeholder='birthday'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  createdAt:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.createdAt, valueUpdate:"keyup"' type='text' class='form-control' placeholder='createdAt'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  sentAt:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.sentAt, valueUpdate:"keyup"' type='text' class='form-control' placeholder='sentAt'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  description:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.description, valueUpdate:"keyup"' type='text' class='form-control' placeholder='description'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  email:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.email, valueUpdate:"keyup"' type='text' class='form-control' placeholder='email'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  firstName:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.firstName, valueUpdate:"keyup"' type='text' class='form-control' placeholder='firstName'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  gender:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.gender, valueUpdate:"keyup"' type='text' class='form-control' placeholder='gender'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  id:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.id, valueUpdate:"keyup"' type='text' class='form-control' placeholder='id'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  lastName:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.lastName, valueUpdate:"keyup"' type='text' class='form-control' placeholder='lastName'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  name:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  phone:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.phone, valueUpdate:"keyup"' type='text' class='form-control' placeholder='phone'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  title:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.title, valueUpdate:"keyup"' type='text' class='form-control' placeholder='title'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  username:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.username, valueUpdate:"keyup"' type='text' class='form-control' placeholder='username'  />
+              </div>
+            </div>
+          </div>
+
+          <div class='form form-group'>
+            <div class='row'>
+              <div class='col-md-2'>
+                <div class='pull-right'>
+                  website:
+                </div>
+              </div>
+              <div class='col-md-6'>
+                <input data-bind='value:$data.website, valueUpdate:"keyup"' type='text' class='form-control' placeholder='website'  />
+              </div>
+            </div>
+          </div>
+
+          <strong>custom properties</strong>
+          <span data-bind='visible: $data.children().length > 0' style='color:orange'>properties with blank names will be omitted</span>
+          <div data-bind='template: {name: "generic-properties-template", data: $data.children }'></div>
+          <div>
+            <a data-bind='click: $data.addChild'>add property</a>
+          </div>
+        </div>
+      </div>
+</script>
+<!-- }}} -->
+
+  <!-- {{{ inegration items template -->
+  <script id="integration-template" type='text/html'>
+      <div class='panel panel-default'>
+        <div class='panel-heading'>
+          <h3 class='panel-title'>Integrations</h3>
+        </div>
+        <div class='panel-body'>
+          <span data-bind='visible: $data.integrationItems().length > 0' style='color:orange'>integrations with blank names will be omitted</span>
+          <div data-bind='foreach: $data.integrationItems'>
+            <div class='col-md-2'>
+              <input data-bind='value:$data.name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+            </div>
+            <div class='col-md-10'>
+              <div>
+                <a class='btn btn-default' data-bind='css:{active: $data.included() == "yes"}, click: function(){$data.included("yes");}'>yes</a>
+                <a class='btn btn-default' data-bind='css:{active: $data.included() == "no"}, click: function(){$data.included("no");}'>no</a>
+              </div>
+              <a data-bind='click: $data.remove'>remove integration</a>
+            </div>
+          </div>
+          <div>
+            <a data-bind='click: $data.addIntegrationItem'>add integration</a>
+          </div>
+        </div>
+      </div>
+  </script>  
+  <!-- }}} -->
+  <script>
+    $(function(){
+      ko.validation.init({insertMessages:false});
+       var panel = new PanelModel();
+       console.log('panel made, applying bindings');
+       ko.applyBindings(panel, $('#application').get(0));
+    });
+  </script>
+
+</head>
+<body>
+  <div class='container-fluid'>
+      <h3 style='text-align:center'>
+        Segment Request Simulator
+      </h3>
+      <br/>
+      <div id='application'>
+        <div class='btn-group btn-group-justified'>
+          <a class='btn btn-default' data-bind='css:{"btn-primary":$data.language() == "nodejs"}'>nodejs</a>
+          <a class='btn btn-default disabled' data-bind='css:{"btn-primary":$data.language() == "ruby"}'>ruby</a>
+          <a class='btn btn-default disabled' data-bind='css:{"btn-primary":$data.language() == "python"}'>python</a>
+        </div>
+        <br/>
+        <div class='btn-group btn-group-justified'>
+          <a class='btn btn-default' data-bind='css:{"btn-primary":$data.method() == "identify"}, click: function(){$data.method("identify")}'>identify</a>
+          <a class='btn btn-default' data-bind='css:{"btn-primary":$data.method() == "track"}, click: function(){$data.method("track")}'>track</a>
+          <a class='btn btn-default' data-bind='css:{"btn-primary":$data.method() == "page"}, click: function(){$data.method("page")}'>page</a>
+          <a class='btn btn-default' data-bind='css:{"btn-primary":$data.method() == "group"}, click: function(){$data.method("group")}'>group</a>
+          <a class='btn btn-default' data-bind='css:{"btn-primary":$data.method() == "alias"}, click: function(){$data.method("alias")}'>alias</a>
+          <a class='btn btn-default' data-bind='css:{"btn-primary":$data.method() == "raw"}, click: function(){$data.method("raw")}'>raw</a>
+        </div>
+        <br/>
+
+        <div data-bind='visible: $data.method() == "identify"'>
+          <div data-bind='template:{name: "common-template", data: $data.identify()}'></div>
+          <div data-bind='template:{name: "traits-template", data: $data.identify().traits}'></div>
+          <div data-bind='template:{name: "context-template", data: $data.identify().context}'></div>
+          <div data-bind='template:{name: "integration-template", data: $data.identify().integrations}'></div>
+        </div>
+
+        <div data-bind='visible: $data.method() == "track"'>
+          <div class='panel panel-default'>
+            <div class='panel-heading'>
+              <h3 class='panel-title'>Track Fields</h3>
+            </div>
+            <div class='panel-body'>
+              <div class='form form-group'>
+                <div class='row'>
+                  <div class='col-md-2'>
+                    <div class='pull-right'>
+                      event:
+                    </div>
+                  </div>
+                  <div class='col-md-6'>
+                    <input data-bind='value:$data.track().event, valueUpdate:"keyup"' type='text' class='form-control' placeholder='event'  />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div data-bind='template:{name: "common-template", data: $data.track()}'></div>
+          <div data-bind='template:{name: "properties-template", data: $data.track().properties}'></div>
+          <div data-bind='template:{name: "context-template", data: $data.track().context}'></div>
+          <div data-bind='template:{name: "integration-template", data: $data.track().integrations}'></div>
+        </div>
+
+        <div data-bind='visible: $data.method() == "page"'>
+          <div class='panel panel-default'>
+            <div class='panel-heading'>
+              <h3 class='panel-title'>Page Fields</h3>
+            </div>
+
+            <div class='panel-body'>
+              <div class='form form-group'>
+                <div class='row'>
+                  <div class='col-md-2'>
+                    <div class='pull-right'>
+                      category:
+                    </div>
+                  </div>
+                  <div class='col-md-6'>
+                    <input data-bind='value:$data.page().category, valueUpdate:"keyup"' type='text' class='form-control' placeholder='category'  />
+                  </div>
+                </div>
+              </div>
+              <div class='form form-group'>
+                <div class='row'>
+                  <div class='col-md-2'>
+                    <div class='pull-right'>
+                      name:
+                    </div>
+                  </div>
+                  <div class='col-md-6'>
+                    <input data-bind='value:$data.page().name, valueUpdate:"keyup"' type='text' class='form-control' placeholder='name'  />
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+          <div data-bind='template:{name: "common-template", data: $data.page()}'></div>
+          <div data-bind='template:{name: "properties-template", data: $data.page().properties}'></div>
+          <div data-bind='template:{name: "context-template", data: $data.page().context}'></div>
+          <div data-bind='template:{name: "integration-template", data: $data.page().integrations}'></div>
+        </div>
+
+        <div data-bind='visible: $data.method() == "group"'>
+          <div class='panel panel-default'>
+            <div class='panel-heading'>
+              <h3 class='panel-title'>Group Fields</h3>
+            </div>
+            <div class='panel-body'>
+              <div class='form form-group'>
+                <div class='row'>
+                  <div class='col-md-2'>
+                    <div class='pull-right'>
+                      groupId:
+                    </div>
+                  </div>
+                  <div class='col-md-6'>
+                    <input data-bind='value:$data.group().groupId, valueUpdate:"keyup"' type='text' class='form-control' placeholder='groupId'  />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div data-bind='template:{name: "common-template", data: $data.group()}'></div>
+          <div data-bind='template:{name: "traits-template", data: $data.group().traits}'></div>
+          <div data-bind='template:{name: "context-template", data: $data.group().context}'></div>
+          <div data-bind='template:{name: "integration-template", data: $data.group().integrations}'></div>
+        </div>
+
+        <div data-bind='visible: $data.method() == "alias"'>
+          <div class='panel panel-default'>
+            <div class='panel-heading'>
+              <h3 class='panel-title'>Alias Fields</h3>
+            </div>
+            <div class='panel-body'>
+              <div class='form form-group'>
+                <div class='row'>
+                  <div class='col-md-2'>
+                    <div class='pull-right'>
+                      previousId:
+                    </div>
+                  </div>
+                  <div class='col-md-6'>
+                    <input data-bind='value:$data.alias().previousId, valueUpdate:"keyup"' type='text' class='form-control' placeholder='previousId'  />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div data-bind='template:{name: "common-template", data: $data.alias()}'></div>
+          <div data-bind='template:{name: "context-template", data: $data.alias().context}'></div>
+          <div data-bind='template:{name: "integration-template", data: $data.alias().integrations}'></div>
+        </div>
+
+        <div data-bind='visible: $data.method() == "raw"'>
+          <div class='panel panel-default'>
+            <div class='panel-heading'>
+              <h3 class='panel-title'>Raw Request</h3>
+            </div>
+            <div class='panel-body'>
+              <div class='form form-group'>
+                <div class='row'>
+                  <div class='col-md-6'>
+                    <textarea data-bind='value: $data.raw().request' style='width:95%;height:50%'></textarea>
+                  </div>
+                  <div class='col-md-6'>
+                    <pre style='height:50%' data-bind='text: $data.raw().response'></pre> 
+                  </div>
+                </div>
+
+                <div>
+                  <a class='btn btn-primary btn-lg btn-block' data-bind='click: $data.raw().submit'>submit</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div data-bind='visible: $data.method() != "raw"'>
+          <a class='btn btn-primary btn-lg btn-block' data-bind='click: submit'>submit</a>
+        </div>
+        <br/>
+
+        <div class='row' data-bind='visible: $data.method() != "raw"'>
+          <div class='col-md-12'>
+            <pre data-bind='text: response'>
+            </pre>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  
+</body>
+</html>

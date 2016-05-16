@@ -1,6 +1,7 @@
 var express = require('express');
 var bodyParser = require('body-parser');
 var api = require('./server/api');
+var ui = require('./server/ui');
 var debug = require('debug')('segment-sim:server');
 
 var app = express();
@@ -18,6 +19,7 @@ app.use(bodyParser.json());
 
 //add the api controller with a ref to the socket
 app.use('/api', api(io));
+app.use('/', ui);
 
 //if this "module" is not required (eg for a test), 
 if (!module.parent) {
