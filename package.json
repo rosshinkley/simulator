@@ -20,7 +20,8 @@
     "mocha": "^2.4.5"
   },
   "scripts": {
-    "test": "mocha test/index.js"
+    "test": "mocha test/index.js",
+    "postinstall":"npm install --prefix ./src/server/lib/segment/nodejs"
   },
   "repository": {
     "type": "git",
